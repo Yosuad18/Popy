@@ -1,0 +1,8 @@
+INFO:     Started server process [8448]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49868 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49868 - "GET /demo HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49868 - "GET /static/assets/index-Bt0IVL_d.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60329 - "POST /chat HTTP/1.1" 400 Bad Request

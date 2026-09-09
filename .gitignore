@@ -24,3 +24,10 @@ htmlcov/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Frontend (React/Vite)
+node_modules/
+frontend/dist/
+
+# Built frontend output
+static/
