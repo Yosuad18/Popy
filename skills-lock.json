@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design": {
+      "source": "mager/frontend-design",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "12846ce07a406b8159e8b340a7f46ae15e8c0bc9e6dd278d923785de211d4e71"
+    },
+    "wompi": {
+      "source": "noxai-co/wompi-skills",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "d0ec0437f35d15a09d481036d135e25c919d666a3ea5d759d110b04b493f2b82"
+    }
+  }
+}
