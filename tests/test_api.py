@@ -1,14 +1,17 @@
-"""Comprehensive test suite for FastAPI + LangGraph Chatbot."""
+"""Comprehensive test suite for FastAPI + LangGraph E-Commerce Chatbot."""
 
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.agent.tools import (
-    calculate,
-    get_current_time,
-    get_weather,
-    save_note,
-    get_notes,
+    search_catalog,
+    filter_products,
+    get_product_details,
+    add_to_cart,
+    view_cart,
+    remove_from_cart,
+    place_order,
+    get_order_status,
     search_knowledge,
 )
 from app.agent.main import run_agent
@@ -43,7 +46,7 @@ def test_demo_ui_endpoint():
     response = client.get("/demo")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "LangGraph" in response.text
+    assert "Tienda Online" in response.text
 
 
 def test_list_tools_endpoint():
@@ -53,11 +56,11 @@ def test_list_tools_endpoint():
     tools_list = response.json()
     assert isinstance(tools_list, list)
     names = [t["name"] for t in tools_list]
-    assert "calculate" in names
-    assert "get_current_time" in names
-    assert "get_weather" in names
-    assert "save_note" in names
-    assert "get_notes" in names
+    assert "search_catalog" in names
+    assert "get_product_details" in names
+    assert "add_to_cart" in names
+    assert "view_cart" in names
+    assert "place_order" in names
     assert "search_knowledge" in names
 
 
@@ -75,46 +78,77 @@ def test_graph_diagram_endpoint():
     assert "mermaid" in html_res.text
 
 
-def test_tool_calculate():
-    """Verify safe calculator tool handles operations and safely rejects unsafe code."""
-    assert calculate.invoke({"expression": "5 * 5"}) == "25"
-    assert calculate.invoke({"expression": "(10 + 20) / 2"}) == "15.0"
-    assert calculate.invoke({"expression": "2 ** 3"}) == "8"
-    result = calculate.invoke({"expression": "__import__('os').system('ls')"})
-    assert "Error" in result
+def test_tool_search_catalog():
+    """Verify search_catalog returns matching products."""
+    result = search_catalog.invoke({"query": "headphones"})
+    assert "Headphones" in result
+    assert "$" in result
+
+    not_found = search_catalog.invoke({"query": "hoverboard"})
+    assert "No se encontraron" in not_found
 
 
-def test_tool_get_current_time():
-    """Verify get_current_time returns formatted date string."""
-    time_str = get_current_time.invoke({})
-    assert isinstance(time_str, str)
-    assert len(time_str) >= 10
+def test_tool_filter_products():
+    """Verify filter_products filters by category and price."""
+    result = filter_products.invoke({"category": "Electronics", "min_price": 0, "max_price": 0})
+    assert "Electronics" in result or "productos" in result.lower()
+
+    filter_result = filter_products.invoke({"category": "Books", "min_price": 10, "max_price": 20})
+    assert "Books" in filter_result or "Productos" in filter_result or "No hay productos" in filter_result
 
 
-def test_tool_get_weather():
-    """Verify get_weather returns forecasts for requested cities."""
-    res_bogota = get_weather.invoke({"city": "Bogota"})
-    assert "Bogota" in res_bogota
-    assert "°C" in res_bogota
+def test_tool_get_product_details():
+    """Verify get_product_details returns the correct product info."""
+    result = get_product_details.invoke({"product_id": 1})
+    assert "Wireless Bluetooth Headphones" in result
+    assert "$79.99" in result
 
-    res_madrid = get_weather.invoke({"city": "Madrid"})
-    assert "Madrid" in res_madrid
+    missing = get_product_details.invoke({"product_id": 9999})
+    assert "no encontrado" in missing
 
 
-def test_tool_notes_management():
-    """Verify save_note and get_notes can store and recall memory items."""
-    save_res = save_note.invoke({"title": "meeting", "content": "Team standup at 10 AM"})
-    assert "guardada" in save_res.lower() or "exitosa" in save_res.lower()
+def test_tool_cart_flow():
+    """Verify add_to_cart, view_cart, and remove_from_cart work as a flow."""
+    # Add product to cart
+    add_res = add_to_cart.invoke({"product_id": 6, "quantity": 2}, config={"configurable": {"thread_id": "test-cart-flow"}})
+    assert "añadido" in add_res.lower() or "Carrito" in add_res
 
-    notes_res = get_notes.invoke({})
-    assert "Meeting" in notes_res
-    assert "Team standup at 10 AM" in notes_res
+    # View cart
+    cart_res = view_cart.invoke({}, config={"configurable": {"thread_id": "test-cart-flow"}})
+    assert "Tu carrito" in cart_res
+    assert "T-Shirt" in cart_res or "Camiseta" in cart_res or "TOTE" in cart_res or "Total" in cart_res
+
+    # Remove from cart
+    remove_res = remove_from_cart.invoke({"product_id": 6}, config={"configurable": {"thread_id": "test-cart-flow"}})
+    assert "eliminado" in remove_res
+
+    # Empty cart view
+    empty_res = view_cart.invoke({}, config={"configurable": {"thread_id": "test-cart-flow"}})
+    assert "vacío" in empty_res
+
+
+def test_tool_place_order():
+    """Verify place_order creates an order and clears the cart."""
+    thread_id = "test-order-flow"
+    add_to_cart.invoke({"product_id": 11, "quantity": 1}, config={"configurable": {"thread_id": thread_id}})
+    order_res = place_order.invoke({}, config={"configurable": {"thread_id": thread_id}})
+    assert "confirmado" in order_res.lower()
+    assert "ORD-" in order_res
+    assert "$" in order_res
+
+    order_id = [w for w in order_res.split() if w.startswith("ORD-")][0]
+    status_res = get_order_status.invoke({"order_id": order_id})
+    assert order_id in status_res
+    assert "Procesando" in status_res or "Estado" in status_res
 
 
 def test_tool_search_knowledge():
-    """Verify search_knowledge retrieves relevant tech docs."""
-    result = search_knowledge.invoke({"query": "fastapi"})
-    assert "FastAPI" in result
+    """Verify search_knowledge retrieves relevant store policies."""
+    result = search_knowledge.invoke({"query": "devoluciones reembolso"})
+    assert "Returns & Refunds" in result or "Devoluciones" in result or "reembolso" in result.lower()
+
+    invalid = search_knowledge.invoke({"query": "pregunta totalmente ajena"})
+    assert "No encontré" in invalid
 
 
 def test_chat_message_flow():

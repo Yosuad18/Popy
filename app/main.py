@@ -58,10 +58,10 @@ async def demo_ui():
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LangGraph + FastAPI Chatbot</title>
+  <title>Tienda Online - Asistente de Compras</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .message-user { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; border-radius: 18px 18px 4px 18px; }
+    .message-user { background: linear-gradient(135deg, #059669, #10b981); color: white; border-radius: 18px 18px 4px 18px; }
     .message-bot { background-color: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 18px 18px 18px 4px; }
   </style>
 </head>
@@ -69,24 +69,24 @@ async def demo_ui():
   <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl flex flex-col h-[94vh] overflow-hidden border border-slate-200">
     
     <!-- Header -->
-    <header class="bg-indigo-600 text-white p-4 flex items-center justify-between shadow-md">
+    <header class="bg-emerald-600 text-white p-4 flex items-center justify-between shadow-md">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-          🤖
+          🛍️
         </div>
         <div>
-          <h1 class="font-bold text-base leading-tight">LangGraph + FastAPI Chatbot</h1>
-          <p class="text-xs text-indigo-200 flex items-center gap-1.5" id="status-container">
+          <h1 class="font-bold text-base leading-tight">Tienda Online - Asistente de Compras</h1>
+          <p class="text-xs text-emerald-200 flex items-center gap-1.5" id="status-container">
             <span id="status-indicator" class="inline-block w-2 h-2 rounded-full bg-yellow-400"></span>
             <span id="status-text">Conectando...</span>
           </p>
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <a href="/chat/graph?format=html" target="_blank" class="text-xs bg-indigo-500/80 hover:bg-indigo-500 px-2.5 py-1.5 rounded-lg text-white font-medium transition">
-          📊 Ver Grafo
+        <a href="/chat/graph?format=html" target="_blank" class="text-xs bg-emerald-500/80 hover:bg-emerald-500 px-2.5 py-1.5 rounded-lg text-white font-medium transition">
+          📊 Grafo
         </a>
-        <a href="/docs" target="_blank" class="text-xs bg-indigo-500/80 hover:bg-indigo-500 px-2.5 py-1.5 rounded-lg text-white font-medium transition">
+        <a href="/docs" target="_blank" class="text-xs bg-emerald-500/80 hover:bg-emerald-500 px-2.5 py-1.5 rounded-lg text-white font-medium transition">
           📖 Docs
         </a>
         <button id="reset-btn" title="Nueva Conversación" class="text-xs bg-red-500/80 hover:bg-red-500 px-2.5 py-1.5 rounded-lg text-white font-medium transition">
@@ -98,17 +98,17 @@ async def demo_ui():
     <!-- Quick Prompts bar -->
     <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs text-slate-600">
       <span class="font-semibold text-slate-400 shrink-0">Prueba rápida:</span>
-      <button class="quick-chip bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="¿Qué hora es?">
-        🕒 Hora actual
+      <button class="quick-chip bg-white hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="Muéstrame productos de electrónica">
+        🎧 Electrónica
       </button>
-      <button class="quick-chip bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="Calcula: (25 * 4) + 150">
-        🧮 25 * 4 + 150
+      <button class="quick-chip bg-white hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="¿Cuáles son sus políticas de devolución?">
+        🔄 Política devolución
       </button>
-      <button class="quick-chip bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="¿Cuál es el clima en Bogotá?">
-        🌤 Clima Bogotá
+      <button class="quick-chip bg-white hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="Añade el producto 1 al carrito">
+        🛒 Añadir al carrito
       </button>
-      <button class="quick-chip bg-white hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="¿Qué es LangGraph?">
-        📚 ¿Qué es LangGraph?
+      <button class="quick-chip bg-white hover:bg-emerald-50 hover:text-emerald-600 border border-slate-200 px-2.5 py-1 rounded-full shrink-0 transition" data-prompt="Ver mi carrito de compras">
+        🛒 Ver carrito
       </button>
     </div>
 
@@ -116,15 +116,18 @@ async def demo_ui():
     <main id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/60">
       <div class="flex justify-start">
         <div class="message-bot p-3.5 max-w-[85%] text-sm shadow-sm whitespace-pre-wrap">
-          👋 ¡Hola! Soy tu asistente impulsado por <strong>LangGraph</strong> y <strong>FastAPI</strong>.<br/><br/>
-          Cuento con memoria de sesión y herramientas para:
+          👋 ¡Bienvenido a <strong>Tienda Online</strong>! Soy tu asistente de compras.<br/><br/>
+          Puedo ayudarte con:
           <ul class="list-disc ml-5 mt-1 text-slate-600">
-            <li>Calcular operaciones matemáticas (<code>calculate</code>)</li>
-            <li>Consultar fecha y hora actual (<code>get_current_time</code>)</li>
-            <li>Consultar el clima de ciudades (<code>get_weather</code>)</li>
-            <li>Guardar notas de memoria (<code>save_note</code> / <code>get_notes</code>)</li>
-            <li>Buscar información en la base de conocimientos (<code>search_knowledge</code>)</li>
+            <li>Buscar productos por nombre o categoría (<code>search_catalog</code>)</li>
+            <li>Ver detalles de un producto por su ID (<code>get_product_details</code>)</li>
+            <li>Añadir productos al carrito (<code>add_to_cart</code>)</li>
+            <li>Ver y gestionar tu carrito (<code>view_cart</code>, <code>remove_from_cart</code>)</li>
+            <li>Realizar un pedido (<code>place_order</code>)</li>
+            <li>Consultar estado de pedidos (<code>get_order_status</code>)</li>
+            <li>Consultar políticas de envío, devoluciones, pagos y más (<code>search_knowledge</code>)</li>
           </ul>
+          <br/>¿Qué estás buscando hoy?
         </div>
       </div>
     </main>

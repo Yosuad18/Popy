@@ -1,6 +1,5 @@
 """Definición de nodos y bordes con LangGraph."""
 
-import re
 from typing import Literal, List
 from langchain_core.messages import AIMessage, SystemMessage, BaseMessage
 from langchain_openai import ChatOpenAI
@@ -10,7 +9,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from app.config import settings
 from app.agent.state import AgentState
-from app.agent.tools import tools, get_current_time, calculate, get_weather, search_knowledge
+from app.agent.tools import tools, search_catalog, get_product_details, view_cart, search_knowledge
 
 
 def is_openai_configured() -> bool:
@@ -39,21 +38,13 @@ def call_model(state: AgentState) -> dict:
         lower_msg = raw_msg.lower()
 
         tool_preview = ""
-        if any(w in lower_msg for w in ["hora", "time", "fecha", "date"]):
-            tool_preview = f"\n\n[Ejecución de herramienta get_current_time]:\n{get_current_time.invoke({})}"
-        elif any(w in lower_msg for w in ["clima", "weather", "temperatura"]):
-            city = "Bogota"
-            for candidate in ["madrid", "bogota", "lima", "medellin", "buenos aires", "mexico"]:
-                if candidate in lower_msg:
-                    city = candidate.title()
-                    break
-            tool_preview = f"\n\n[Ejecución de herramienta get_weather]:\n{get_weather.invoke({'city': city})}"
-        elif any(w in lower_msg for w in ["langgraph", "fastapi", "langchain", "pydantic"]):
+        if any(w in lower_msg for w in ["producto", "busca", "buscar", "catalogo", "catalog", "tienes"]):
+            query = raw_msg
+            tool_preview = f"\n\n[Ejecución de herramienta search_catalog]:\n{search_catalog.invoke({'query': query})}"
+        elif any(w in lower_msg for w in ["carrito", "carro", "cart"]):
+            tool_preview = f"\n\n[Ejecución de herramienta view_cart]:\n{view_cart.invoke({'config': {}})}"
+        elif any(w in lower_msg for w in ["envio", "devolver", "pago", "politica", "policy", "envios"]):
             tool_preview = f"\n\n[Ejecución de herramienta search_knowledge]:\n{search_knowledge.invoke({'query': raw_msg})}"
-        elif any(c in lower_msg for c in ["*", "+", "/", "**"]) and any(c.isdigit() for c in lower_msg):
-            expr_match = re.search(r"[\d\s\+\-\*\/\(\)\.]+", raw_msg)
-            if expr_match and len(expr_match.group(0).strip()) > 1:
-                tool_preview = f"\n\n[Ejecución de herramienta calculate]:\nResultado: {calculate.invoke({'expression': expr_match.group(0).strip()})}"
 
         demo_response = (
             "[MODO DEMO - Clave de OpenAI no configurada]\n\n"
@@ -62,7 +53,7 @@ def call_model(state: AgentState) -> dict:
             "1. Abre el archivo `.env` en la raíz del proyecto.\n"
             "2. Define `OPENAI_API_KEY=sk-...` con tu clave de OpenAI.\n"
             "3. Reinicia la aplicación.\n\n"
-            "El grafo de LangGraph, memoria checkpointer y herramientas están listos y funcionando!"
+            "El grafo de LangGraph, memoria checkpointer y herramientas de e-commerce están listos y funcionando!"
         )
         return {"messages": [AIMessage(content=demo_response)]}
 
