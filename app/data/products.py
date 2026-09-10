@@ -2,9 +2,9 @@
 
 from typing import List, Dict, Optional
 
+from app.data.vector_store import search as vector_search
 
 PRODUCTS: List[Dict] = [
-    # Electronics
     {
         "id": 1,
         "name": "Wireless Bluetooth Headphones",
@@ -45,7 +45,6 @@ PRODUCTS: List[Dict] = [
         "price": 89.99,
         "stock": 35,
     },
-    # Clothing
     {
         "id": 6,
         "name": "Classic Cotton T-Shirt",
@@ -86,7 +85,6 @@ PRODUCTS: List[Dict] = [
         "price": 39.99,
         "stock": 180,
     },
-    # Home & Kitchen
     {
         "id": 11,
         "name": "Stainless Steel Water Bottle",
@@ -127,7 +125,6 @@ PRODUCTS: List[Dict] = [
         "price": 34.99,
         "stock": 70,
     },
-    # Sports & Outdoors
     {
         "id": 16,
         "name": "Yoga Mat Non-Slip",
@@ -168,7 +165,6 @@ PRODUCTS: List[Dict] = [
         "price": 34.99,
         "stock": 55,
     },
-    # Books
     {
         "id": 21,
         "name": "Python Programming for Beginners",
@@ -210,27 +206,34 @@ def search_products(
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
 ) -> List[Dict]:
-    """Search products by name/description, category, and price range."""
-    results = PRODUCTS
-
+    """Search products using ChromaDB Cloud vector search, with optional filters."""
     if query:
-        q = query.lower()
-        results = [
-            p for p in results
-            if q in p["name"].lower() or q in p["description"].lower() or q in p["category"].lower()
-        ]
+        results = vector_search(query, n=20)
+        products = []
+        seen_ids = set()
+        for r in results:
+            meta = r["metadata"]
+            pid = meta.get("product_id")
+            if pid and pid not in seen_ids:
+                seen_ids.add(pid)
+                product = next((p for p in PRODUCTS if p["id"] == pid), None)
+                if product:
+                    products.append(product)
+        results_list = products
+    else:
+        results_list = PRODUCTS
 
     if category:
         c = category.lower()
-        results = [p for p in results if c in p["category"].lower()]
+        results_list = [p for p in results_list if c in p["category"].lower()]
 
     if min_price is not None:
-        results = [p for p in results if p["price"] >= min_price]
+        results_list = [p for p in results_list if p["price"] >= min_price]
 
     if max_price is not None:
-        results = [p for p in results if p["price"] <= max_price]
+        results_list = [p for p in results_list if p["price"] <= max_price]
 
-    return results
+    return results_list
 
 
 def get_product_by_id(product_id: int) -> Optional[Dict]:

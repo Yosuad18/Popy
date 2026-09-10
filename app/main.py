@@ -10,10 +10,24 @@ import uvicorn
 
 from app.config import settings
 from app.routers import health_router, chat_router
+from app.data import ingest_all
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
 FRONTEND_INDEX = STATIC_DIR / "index.html"
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description=(
+        "Production-ready Chatbot API built with FastAPI, LangChain, and LangGraph. "
+        "Supports multi-turn memory checkpointer, tool-calling agent, streaming SSE, and fallback demo mode."
+    ),
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+ingest_all()
 
 app = FastAPI(
     title=settings.APP_NAME,

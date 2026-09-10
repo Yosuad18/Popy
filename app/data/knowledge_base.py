@@ -2,6 +2,8 @@
 
 from typing import List, Dict
 
+from app.data.vector_store import search as vector_search
+
 
 KNOWLEDGE_BASE: List[Dict] = [
     {
@@ -53,7 +55,7 @@ KNOWLEDGE_BASE: List[Dict] = [
     },
     {
         "topic": "account",
-        "keywords": ["cuenta", "account", "registro", "register", "crear cuenta", "iniciar sesion", "login", "pass" "contraseña"],
+        "keywords": ["cuenta", "account", "registro", "register", "crear cuenta", "iniciar sesion", "login", "pass", "contraseña"],
         "content": (
             "Account Help:\n"
             "- Create an account to track orders, save addresses, and earn rewards.\n"
@@ -102,20 +104,21 @@ KNOWLEDGE_BASE: List[Dict] = [
 
 
 def search_knowledge_base(query: str) -> str:
-    """Search the knowledge base for the most relevant entries matching the query."""
-    q = query.lower()
-    results = []
+    """Search the knowledge base using ChromaDB Cloud vector search."""
+    results = vector_search(query, n=5)
+    if not results:
+        return (
+            "No encontré información específica sobre eso. "
+            "Puedo ayudarte con: envíos/delivery, devoluciones/refunds, pagos, "
+            "estado de pedidos, soporte al cliente, productos, y promociones."
+        )
+    parts = []
+    for r in results:
+        topic = r["metadata"].get("topic", "general").upper()
+        parts.append(f"[{topic}]\n{r['document']}")
+    return "\n\n---\n\n".join(parts)
 
-    for entry in KNOWLEDGE_BASE:
-        keywords = entry["keywords"]
-        if any(kw in q for kw in keywords):
-            results.append(f"[{entry['topic'].upper()}]\n{entry['content']}")
 
-    if results:
-        return "\n\n---\n\n".join(results)
-
-    return (
-        "No encontré información específica sobre eso. "
-        "Puedo ayudarte con: envíos/delivery, devoluciones/refunds, pagos, "
-        "estado de pedidos, soporte al cliente, productos, y promociones."
-    )
+def search_knowledge_base_raw(query: str, n: int = 5) -> list[dict]:
+    """Return raw vector search results from the knowledge base."""
+    return vector_search(query, n=n)
