@@ -1,42 +1,44 @@
+# app/rag/retriever.py
+import os
+import chromadb
+from dotenv import load_dotenv
 from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import OpenAIEmbeddings
 
-# 1. Conectar a la misma colección donde hiciste la ingesta
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+load_dotenv()
 
-vector_store = Chroma(
-    client=chroma_client, # Tu cliente configurado de Chroma Cloud
-    collection_name="ecommerce_data",
-    embedding_function=embeddings
-)
+def get_retriever():
+    # 1. Asegurar la clave de API
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY no encontrada en las variables de entorno.")
 
-# 2. Crear el retriever
-retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+    # 2. Instanciar cliente e embeddings DENTRO de la función
+    embeddings = OpenAIEmbeddings(
+        model="text-embedding-3-small",
+        api_key=api_key
+    )
 
-# 3. Prompt estricto para evitar alucinaciones
-system_prompt = """
-Eres un asistente de e-commerce. Responde a la pregunta del usuario utilizando ÚNICAMENTE la siguiente información de contexto recuperada de la base de datos.
-Si la información no está en el contexto, di claramente "No encontré información sobre eso en la base de datos".
+    chroma_client = chromadb.HttpClient(
+        host=os.getenv("CHROMA_SERVER_HOST", "https://api.trychroma.com"),
+        headers={"x-chroma-token": os.getenv("CHROMA_API_KEY")},
+        tenant=os.getenv("CHROMA_TENANT", "default_tenant"),
+        database=os.getenv("CHROMA_DATABASE", "default_database")
+    )
 
-Contexto:
-{context}
+    vector_store = Chroma(
+        client=chroma_client,
+        collection_name="ecommerce_data",
+        embedding_function=embeddings
+    )
 
-Pregunta: {question}
-"""
+    return vector_store.as_retriever(search_kwargs={"k": 5})
 
-prompt = ChatPromptTemplate.from_template(system_prompt)
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-
-# 4. Cadena RAG
-rag_chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
-    | prompt
-    | llm
-    | StrOutputParser()
-)
-
-# Al preguntar esto, ahora usará los datos reales (Laptop Legion 5, Smartphone S24, etc.)
-# respuesta = rag_chain.invoke("¿Qué productos tienes disponibles?")
+def ask_ecommerce_bot(query: str) -> str:
+    retriever = get_retriever()
+    docs = retriever.invoke(query)
+    
+    if not docs:
+        return "No se encontraron coincidencias en la base de datos."
+    
+    return "\n---\n".join([doc.page_content for doc in docs])
