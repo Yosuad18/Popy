@@ -83,6 +83,8 @@ El agente dispone de un conjunto de herramientas para gestionar la experiencia d
 
 ### 1. Activar el Entorno Virtual
 
+##crear entoro
+python -m venv .venv
 **Windows (PowerShell):**
 ```powershell
 .\.venv\Scripts\Activate.ps1
