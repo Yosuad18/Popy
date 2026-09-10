@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "chroma-cloud": {
+      "source": "chroma-core/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/chroma-cloud/SKILL.md",
+      "computedHash": "d39c3c427e28adf9671438a20b17774617dc20946f5981e4d1f321699f156891"
+    },
     "frontend-design": {
       "source": "mager/frontend-design",
       "sourceType": "github",
