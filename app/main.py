@@ -12,23 +12,15 @@ from app.config import settings
 from app.routers import health_router, chat_router
 from app.data import ingest_all
 
+# Directorios de la aplicación
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
 FRONTEND_INDEX = STATIC_DIR / "index.html"
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    description=(
-        "Production-ready Chatbot API built with FastAPI, LangChain, and LangGraph. "
-        "Supports multi-turn memory checkpointer, tool-calling agent, streaming SSE, and fallback demo mode."
-    ),
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-
+# Ejecutar ingesta de datos en el arranque
 ingest_all()
 
+# Instancia ÚNICA de FastAPI
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
@@ -40,7 +32,7 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Configure Cross-Origin Resource Sharing (CORS)
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -49,11 +41,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
+# Registrar routers
 app.include_router(health_router)
 app.include_router(chat_router)
 
-# Serve built React assets under /static (creates dir if missing so app boots pre-build)
+# Servir archivos estáticos del frontend
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

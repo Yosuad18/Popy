@@ -1,19 +1,18 @@
-# app/rag/retriever.py
 import os
 import chromadb
 from dotenv import load_dotenv
 from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
 load_dotenv()
 
 def get_retriever():
-    # 1. Asegurar la clave de API
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise ValueError("OPENAI_API_KEY no encontrada en las variables de entorno.")
+        raise ValueError("OPENAI_API_KEY no configurada.")
 
-    # 2. Instanciar cliente e embeddings DENTRO de la función
     embeddings = OpenAIEmbeddings(
         model="text-embedding-3-small",
         api_key=api_key
@@ -39,6 +38,22 @@ def ask_ecommerce_bot(query: str) -> str:
     docs = retriever.invoke(query)
     
     if not docs:
-        return "No se encontraron coincidencias en la base de datos."
+        return "No se encontraron coincidencias en el catálogo o base de datos."
     
-    return "\n---\n".join([doc.page_content for doc in docs])
+    context = "\n---\n".join([doc.page_content for doc in docs])
+
+    prompt = ChatPromptTemplate.from_template("""
+    Usa ÚNICAMENTE el siguiente contexto recuperado de la base de datos para responder la consulta del usuario.
+    Si no hay suficiente información, responde que no dispones de ese dato.
+
+    Contexto:
+    {context}
+
+    Consulta:
+    {question}
+    """)
+
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    chain = prompt | llm | StrOutputParser()
+    
+    return chain.invoke({"context": context, "question": query})
