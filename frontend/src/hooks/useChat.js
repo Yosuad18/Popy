@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { sendMessage, streamMessage, deleteHistory } from '../lib/api';
+import { sendMessage, streamMessage } from '../lib/api';
 
 function generateThreadId() {
   return 'session-' + Math.random().toString(36).substring(2, 9);
@@ -101,13 +101,7 @@ export function useChat() {
               })
             );
           } else if (eventType === 'error' && data.error) {
-            setMessages(prev =>
-              prev.map(m =>
-                m.id === botId
-                  ? { ...m, content: 'Error: ' + data.error }
-                  : m
-              )
-            );
+            throw new Error(data.error);
           }
         });
 
@@ -151,14 +145,11 @@ export function useChat() {
   }, [threadId, isStreaming, addMessage]);
 
   const resetConversation = useCallback(async () => {
-    try {
-      await deleteHistory(threadId);
-    } catch {}
     const newId = generateThreadId();
     setThreadId(newId);
     localStorage.setItem('chat_thread_id', newId);
     setMessages([WELCOME_MESSAGE]);
-  }, [threadId]);
+  }, []);
 
   return {
     messages,
