@@ -1,4 +1,10 @@
 import { useEffect, useState } from 'react';
+import Menu from './components/Menu';
+import Reservas from './components/Reservas';
+import Pedidos from './components/Pedidos';
+import Usuarios from './components/Usuarios';
+import Repartidores from './components/Repartidores';
+import Descuentos from './components/Descuentos';
 import { useChat } from './hooks/useChat';
 import { checkHealth } from './lib/api';
 import Header from './components/Header';

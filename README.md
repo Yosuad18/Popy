@@ -1,6 +1,6 @@
-# 🛍️ E-Commerce Chatbot
+# 🍽️ Restaurante Chatbot
 
-Un asistente conversacional de **tienda en línea** construido con **FastAPI**, **LangChain**, **LangGraph** y **Pydantic**. Permite a los clientes buscar productos, ver el catálogo, gestionar su carrito de compras, realizar pedidos y obtener respuestas sobre políticas de envío, devoluciones y atención al cliente mediante un agente con memoria multi-turno y herramientas invocables.
+Un asistente conversacional de **restaurante** construido con **FastAPI**, **LangChain**, **LangGraph** y **Pydantic**. Permite a los usuarios consultar el menú, gestionar reservas, realizar pedidos y obtener respuestas sobre políticas de descuentos y atención al cliente mediante un agente con memoria multi-turno y herramientas invocables.
 
 ---
 
@@ -83,7 +83,7 @@ El agente dispone de un conjunto de herramientas para gestionar la experiencia d
 
 ### 1. Activar el Entorno Virtual
 
-##crear entoro
+##crear entorno
 python -m venv .venv
 **Windows (PowerShell):**
 ```powershell
