@@ -2,13 +2,15 @@
   "name": "tienda-online-chatbot",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@chroma-core/default-embed": "^0.1.9",
+    "chromadb": "^3.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

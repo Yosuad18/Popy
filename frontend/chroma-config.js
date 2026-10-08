@@ -1,26 +1,18 @@
-const chroma = require('chroma');
+const { ChromaClient } = require('chromadb');
+const { DefaultEmbeddingFunction } = require('@chroma-core/default-embed');
 
-const restaurantSchema = {
-    menu: [
-        { item: String, price: Number, description: String }
-    ],
-    reservas: [
-        { nombre: String, fecha: Date, hora: String, numeroPersonas: Number }
-    ],
-    pedidos: [
-        { usuarioId: String, items: [String], total: Number, estado: String }
-    ],
-    usuarios: [
-        { nombre: String, email: String, telefono: String }
-    ],
-    repartidores: [
-        { nombre: String, telefono: String, estado: String }
-    ],
-    descuentos: [
-        { codigo: String, porcentaje: Number, fechaExpiracion: Date }
-    ],
+const client = new ChromaClient();
+
+const initialize = async () => {
+    // Create a collection with embedding function
+    const collection = await client.createCollection('restaurant_data', {
+        embeddingFunction: new DefaultEmbeddingFunction(),
+    });
+
+    // You can add initialization logic here if needed
+    console.log('Chroma initialized and collection created.');
 };
 
-chroma.initialize(restaurantSchema);
+initialize().catch(console.error);
 
-module.exports = chroma;
+module.exports = client;
