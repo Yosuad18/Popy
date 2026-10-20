@@ -33,9 +33,6 @@ export default function Header({ health, onReset }) {
             <span aria-hidden="true" className="text-lg leading-none">🛍️</span>
           </div>
           <div className="min-w-0">
-            <h1 className="font-display font-bold text-[15px] leading-tight truncate">
-              Tienda Online — Asistente de Compras
-            </h1>
             <p className="status-pill text-emerald-100">
               <span
                 className={`status-dot ${status.color} ${status.pulse ? 'animate-pulse' : ''}`}
@@ -65,7 +62,7 @@ export default function Header({ health, onReset }) {
           <button
             onClick={onReset}
             title="Nueva Conversación"
-            className="header-btn bg-red-500/80 hover:bg-red-500"
+            className="header-btn bg-blue-400/80 hover:bg-blue-400"
           >
             🔄 Reiniciar
           </button>

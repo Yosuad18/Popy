@@ -10,8 +10,8 @@
     --muted: #6b7280;
     --accent: #10b981;
     --accent-hover: #059669;
-    --secondary: #6366f1;
-    --secondary-hover: #4f46e5;
+    --secondary: #1014f7;
+    --secondary-hover: #180ee4;
     --chip-bg: #f0fdf4;
     --border: #e5e7eb;
     --glow: rgba(16, 185, 129, 0.12);
@@ -132,7 +132,7 @@
 
   /* Send button */
   .btn-send {
-    background: linear-gradient(135deg, #6366f1, #818cf8);
+    background: linear-gradient(135deg, #06df2a, hsl(184, 97%, 37%));
     color: white;
     border: none;
     border-radius: 9999px;

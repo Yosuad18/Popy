@@ -8,7 +8,7 @@ function generateThreadId() {
 const WELCOME_MESSAGE = {
   id: 'welcome',
   role: 'bot',
-  content: `html:<strong>Tienda Online</strong> — Asistente de Compras. Puedo ayudarte con:`,
+  content: `html:Tienda Online — Asistente de Compras. Puedo ayudarte con:`,
   items: [
     'Buscar productos por nombre o categoría',
     'Ver detalles de un producto por su ID',
