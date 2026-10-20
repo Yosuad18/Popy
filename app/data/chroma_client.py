@@ -19,7 +19,7 @@ def get_qwen_embedding_function() -> ChromaCloudQwenEmbeddingFunction:
     if _qwen_ef is None:
         _qwen_ef = ChromaCloudQwenEmbeddingFunction(
             model=ChromaCloudQwenEmbeddingModel.QWEN3_EMBEDDING_0p6B,
-            task="nl_to_code",
+            task=None,
         )
     return _qwen_ef
 

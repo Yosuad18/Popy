@@ -1,15 +1,18 @@
-import os
-import uuid
-from typing import List, Dict, Any
-from pydantic import BaseModel, Field
-from dotenv import load_dotenv
+import re
+from typing import List
+from pydantic import BaseModel
 
-import chromadb
-from langchain_chroma import Chroma
-from langchain_openai import OpenAIEmbeddings
 from langchain_core.documents import Document
 
-load_dotenv()
+from app.data.chroma_client import get_chroma_client, get_qwen_embedding_function
+
+COLLECTION_NAME = "ecommerce"
+
+
+def _slug(text: str) -> str:
+    """Convierte un texto en un slug apto para IDs de Chroma."""
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
+
 
 class Producto(BaseModel):
     nombre: str
@@ -17,6 +20,10 @@ class Producto(BaseModel):
     unidades_disponibles: int
     color: str
     marca: str
+
+    @property
+    def doc_id(self) -> str:
+        return f"producto_{_slug(self.nombre)}"
 
     def to_document(self) -> Document:
         content = (
@@ -43,6 +50,10 @@ class Usuario(BaseModel):
     edad: int
     residencia: str
 
+    @property
+    def doc_id(self) -> str:
+        return f"usuario_{self.cedula}"
+
     def to_document(self) -> Document:
         content = (
             f"Usuario: {self.nombre} {self.apellido}. Cédula: {self.cedula}. "
@@ -67,6 +78,10 @@ class Repartidor(BaseModel):
     placa: str
     email: str
 
+    @property
+    def doc_id(self) -> str:
+        return f"repartidor_{self.cedula}"
+
     def to_document(self) -> Document:
         content = (
             f"Repartidor: {self.nombre} {self.apellido}. Cédula: {self.cedula}. "
@@ -87,6 +102,10 @@ class MetodoPago(BaseModel):
     entidad: str
     fecha: str  
     valor: float
+
+    @property
+    def doc_id(self) -> str:
+        return f"pago_{_slug(self.entidad)}_{_slug(self.fecha)}"
 
     def to_document(self) -> Document:
         content = (
@@ -123,34 +142,40 @@ metodos_pago_data = [
 ]
 
 def run_ingestion():
+    """Ingiere los datos demo en español a la colección 'ecommerce' (IDs fijos, sin duplicados)."""
     print("🚀 Iniciando proceso de ingesta a Chroma Cloud...")
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
-    chroma_client = chromadb.HttpClient(
-        host=os.getenv("CHROMA_SERVER_HOST", "https://api.trychroma.com"),
-        headers={"x-chroma-token": os.getenv("CHROMA_API_KEY")},
-        tenant=os.getenv("CHROMA_TENANT", "default_tenant"),
-        database=os.getenv("CHROMA_DATABASE", "default_database")
+    client = get_chroma_client()
+    collection = client.get_or_create_collection(
+        name=COLLECTION_NAME,
+        embedding_function=get_qwen_embedding_function(),
     )
 
-    vector_store = Chroma(
-        client=chroma_client,
-        collection_name="ecommerce_data",
-        embedding_function=embeddings
+    items: List[BaseModel] = (
+        productos_data + usuarios_data + repartidores_data + metodos_pago_data
     )
+    doc_ids = [item.doc_id for item in items]
 
-    documents: List[Document] = []
-    
-    for item in productos_data + usuarios_data + repartidores_data + metodos_pago_data:
-        documents.append(item.to_document())
+    existing = collection.get(ids=doc_ids)
+    existing_ids = set(existing.get("ids", []))
 
-    doc_ids = [str(uuid.uuid4()) for _ in documents]
+    ids, documents, metadatas = [], [], []
+    for item in items:
+        if item.doc_id in existing_ids:
+            continue
+        doc = item.to_document()
+        ids.append(item.doc_id)
+        documents.append(doc.page_content)
+        metadatas.append(doc.metadata)
 
-    print(f"📦 Subiendo {len(documents)} documentos enriquecidos...")
-    vector_store.add_documents(documents=documents, ids=doc_ids)
+    if not documents:
+        print(f"✅ Nada que hacer: los {len(doc_ids)} documentos ya existen en '{COLLECTION_NAME}'.")
+        return
 
-    print("✅ Ingesta completada con éxito en la colección 'ecommerce_data'.")
+    print(f"📦 Subiendo {len(documents)} documentos nuevos a '{COLLECTION_NAME}'...")
+    collection.add(ids=ids, documents=documents, metadatas=metadatas)
+
+    print(f"✅ Ingesta completada. Colección '{COLLECTION_NAME}': {collection.count()} documentos totales.")
 
 
 if __name__ == "__main__":

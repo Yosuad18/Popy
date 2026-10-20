@@ -33,8 +33,8 @@ def _cart_total(cart: List[dict]) -> float:
 
 @tool
 def search_catalog(query: str) -> str:
-    """Busca productos, usuarios, repartidores y métodos de pago en la base de datos vectorial de Chroma Cloud.
-    Ejemplos de búsqueda: 'laptop', 'smartphone', 'teclado', 'repartidor', 'usuario'."""
+    """Busca productos (por nombre, categoría o por su número de ID), usuarios, repartidores, métodos de pago y políticas de la tienda (envíos, devoluciones, pagos, garantías) en la base de datos vectorial de Chroma Cloud.
+    Ejemplos de búsqueda: 'laptop', 'producto 1', 'repartidor', 'usuario', 'política de devoluciones', 'costo de envío'."""
     q = query.strip()
     if not q:
         return "Por favor especifica qué deseas buscar en la base de datos."
