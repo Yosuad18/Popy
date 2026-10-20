@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    APP_NAME: str = "E-Commerce Chatbot"
+    APP_NAME: str = "Popy — Asistente Virtual"
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = True
     ENVIRONMENT: str = "development"

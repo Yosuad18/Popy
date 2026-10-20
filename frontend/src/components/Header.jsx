@@ -33,6 +33,7 @@ export default function Header({ health, onReset }) {
             <span aria-hidden="true" className="text-lg leading-none">🛍️</span>
           </div>
           <div className="min-w-0">
+            <p className="font-display font-bold text-base leading-tight truncate">Popy</p>
             <p className="status-pill text-emerald-100">
               <span
                 className={`status-dot ${status.color} ${status.pulse ? 'animate-pulse' : ''}`}
