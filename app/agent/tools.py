@@ -1,11 +1,11 @@
-"""Herramientas e-commerce que el agente LangGraph puede invocar."""
+"""Herramientas del restaurante Popy que el agente LangGraph puede invocar."""
 
 from typing import Dict, List
 from langchain_core.tools import tool
 from langchain_core.runnables import RunnableConfig
 
-# Importamos la función RAG de Chroma Cloud en lugar de los archivos estáticos
-from app.rag.retriever import ask_ecommerce_bot
+# Importamos la función RAG multi-colección de Chroma Cloud
+from app.rag.retriever import ask_popy_bot
 
 # Almacén de carritos en memoria, keyed por thread_id/sesión
 _CART_STORAGE: Dict[str, List[dict]] = {}
@@ -33,14 +33,14 @@ def _cart_total(cart: List[dict]) -> float:
 
 @tool
 def search_catalog(query: str) -> str:
-    """Busca productos (por nombre, categoría o por su número de ID), usuarios, repartidores, métodos de pago y políticas de la tienda (envíos, devoluciones, pagos, garantías) en la base de datos vectorial de Chroma Cloud.
-    Ejemplos de búsqueda: 'laptop', 'producto 1', 'repartidor', 'usuario', 'política de devoluciones', 'costo de envío'."""
+    """Busca en la base de datos vectorial de Popy: menú (comida, bebidas, precios), usuarios (CC, nombres, edad, género), pedidos (detalle, cantidades, total, estado) y descuentos vigentes.
+    Ejemplos: 'bandeja paisa', 'precio del ajiaco', 'plato 3', 'pedido ORD-2001', 'descuento de estudiantes', 'usuario Carlos'."""
     q = query.strip()
     if not q:
         return "Por favor especifica qué deseas buscar en la base de datos."
-    
+
     # Consulta semántica directa a Chroma Cloud
-    return ask_ecommerce_bot(q)
+    return ask_popy_bot(q)
 
 
 @tool
@@ -132,20 +132,23 @@ def place_order(config: RunnableConfig) -> str:
 
 @tool
 def get_order_status(order_id: str) -> str:
-    """Consulta el estado de un pedido existente por su número de orden (ej. ORD-1001)."""
-    order = _ORDER_STORAGE.get(order_id.strip().upper())
-    if not order:
-        return f"No se encontró el pedido '{order_id}'. Verifica el número e inténtalo de nuevo."
-    
-    lines = [
-        f"📦 Pedido {order['order_id']}",
-        f"   Estado: {order['status']}",
-        f"   Total: ${order['total']:.2f}",
-        "   Artículos:",
-    ]
-    for item in order["items"]:
-        lines.append(f"    - {item['name']} x {item['quantity']}")
-    return "\n".join(lines)
+    """Consulta el estado de un pedido por su número de orden (ej. ORD-2001).
+    Busca primero en los pedidos de la sesión actual y luego en la base de datos de Chroma."""
+    oid = order_id.strip().upper()
+    order = _ORDER_STORAGE.get(oid)
+    if order:
+        lines = [
+            f"📦 Pedido {order['order_id']}",
+            f"   Estado: {order['status']}",
+            f"   Total: ${order['total']:.2f}",
+            "   Artículos:",
+        ]
+        for item in order["items"]:
+            lines.append(f"    - {item['name']} x {item['quantity']}")
+        return "\n".join(lines)
+
+    # Fallback: buscar en la colección Pedidos de Chroma Cloud
+    return ask_popy_bot(f"pedido {oid}: detalle, cantidades, precio total y estado")
 
 
 # Lista completa de herramientas exportadas para LangGraph

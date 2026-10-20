@@ -1,10 +1,10 @@
 import TypingIndicator from './TypingIndicator';
 
 const PROMPTS = [
-  { label: '🎧 Electrónica', prompt: 'Muéstrame productos de electrónica' },
-  { label: '🔄 Política devolución', prompt: '¿Cuáles son sus políticas de devolución?' },
-  { label: '🛒 Añadir al carrito', prompt: 'Añade el producto 1 al carrito' },
-  { label: '🛒 Ver carrito', prompt: 'Ver mi carrito de compras' },
+  { label: '🍽️ Menú', prompt: '¿Qué tienen en el menú? ¿Cuánto cuesta la bandeja paisa?' },
+  { label: '🏷️ Descuentos', prompt: '¿Qué descuentos o promociones tienen vigentes?' },
+  { label: '🛵 Domicilio', prompt: '¿Cómo hago un pedido a domicilio?' },
+  { label: '📦 Estado pedido', prompt: '¿Cuál es el estado del pedido ORD-2003?' },
 ];
 
 export default function QuickPrompts({ onSelect, disabled }) {

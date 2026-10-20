@@ -1,88 +1,70 @@
-"""Vector store module for ingesting and searching e-commerce data via ChromaDB Cloud."""
+"""Ingesta y búsqueda multi-colección en Chroma Cloud (Popy restaurante)."""
 
-from app.data.chroma_client import get_collection
+from typing import List, Dict, Any
 
-_collection = None
-
-
-def get_collection_instance():
-    """Returns the singleton ecommerce collection."""
-    global _collection
-    if _collection is None:
-        _collection = get_collection("ecommerce")
-    return _collection
+from app.data.chroma_client import get_chroma_client, get_qwen_embedding_function
+from app.data.restaurant_data import COLLECTIONS
 
 
-def ingest_products():
-    """Ingest all products into the ChromaDB collection, skipping existing IDs."""
-    from app.data.products import PRODUCTS
-    collection = get_collection_instance()
-    existing = collection.get(ids=[f"product_{p['id']}" for p in PRODUCTS])
-    existing_ids = set(existing.get("ids", []))
-    ids, documents, metadatas = [], [], []
-
-    for product in PRODUCTS:
-        doc_id = f"product_{product['id']}"
-        if doc_id in existing_ids:
-            continue
-        ids.append(doc_id)
-        text = f"{product['name']}. {product['description']}. Category: {product['category']}. Price: ${product['price']}. Stock: {product['stock']}."
-        documents.append(text)
-        metadatas.append({
-            "type": "product",
-            "product_id": product["id"],
-            "category": product["category"],
-            "name": product["name"],
-            "price": str(product["price"]),
-        })
-
-    if documents:
-        collection.add(ids=ids, documents=documents, metadatas=metadatas)
+def get_collection_instance(name: str):
+    """Returns or creates a restaurant collection with Qwen embeddings."""
+    client = get_chroma_client()
+    return client.get_or_create_collection(
+        name=name,
+        embedding_function=get_qwen_embedding_function(),
+    )
 
 
-def ingest_knowledge_base():
-    """Ingest all knowledge base entries into the ChromaDB collection, skipping existing IDs."""
-    from app.data.knowledge_base import KNOWLEDGE_BASE
-    collection = get_collection_instance()
-    existing = collection.get(ids=[f"kb_{e['topic']}" for e in KNOWLEDGE_BASE])
-    existing_ids = set(existing.get("ids", []))
-    ids, documents, metadatas = [], [], []
+def ingest_all() -> None:
+    """Ingiere los 4 datasets del restaurante, omitiendo IDs ya existentes."""
+    client = get_chroma_client()
+    qwen_ef = get_qwen_embedding_function()
 
-    for entry in KNOWLEDGE_BASE:
-        doc_id = f"kb_{entry['topic']}"
-        if doc_id in existing_ids:
-            continue
-        ids.append(doc_id)
-        documents.append(entry["content"])
-        metadatas.append({
-            "type": "knowledge",
-            "topic": entry["topic"],
-        })
+    for collection_name, docs_fn in COLLECTIONS.items():
+        collection = client.get_or_create_collection(
+            name=collection_name,
+            embedding_function=qwen_ef,
+        )
+        pairs = docs_fn()
+        doc_ids = [doc_id for doc_id, _ in pairs]
 
-    if documents:
-        collection.add(ids=ids, documents=documents, metadatas=metadatas)
+        existing = collection.get(ids=doc_ids)
+        existing_ids = set(existing.get("ids", []))
+
+        ids, documents, metadatas = [], [], []
+        for doc_id, doc in pairs:
+            if doc_id in existing_ids:
+                continue
+            ids.append(doc_id)
+            documents.append(doc.page_content)
+            metadatas.append(doc.metadata)
+
+        if ids:
+            collection.add(ids=ids, documents=documents, metadatas=metadatas)
+            print(f"[Popy] Colección '{collection_name}': +{len(ids)} docs (total {collection.count()})")
+        else:
+            print(f"[Popy] Colección '{collection_name}': sin cambios ({collection.count()} docs)")
 
 
-def ingest_all():
-    """Ingest all products and knowledge base documents into the collection."""
-    ingest_products()
-    ingest_knowledge_base()
+def search(query: str, n: int = 3, collections: List[str] | None = None) -> List[Dict[str, Any]]:
+    """Busca en una o varias colecciones y mezcla los resultados por distancia."""
+    names = collections or list(COLLECTIONS.keys())
+    client = get_chroma_client()
+    qwen_ef = get_qwen_embedding_function()
 
+    hits: List[Dict[str, Any]] = []
+    for name in names:
+        collection = client.get_or_create_collection(name=name, embedding_function=qwen_ef)
+        results = collection.query(
+            query_texts=[query],
+            n_results=n,
+            include=["documents", "metadatas", "distances"],
+        )
+        docs = (results.get("documents") or [[]])[0] or []
+        metas = (results.get("metadatas") or [[]])[0] or []
+        dists = (results.get("distances") or [[]])[0] or []
+        for doc, meta, dist in zip(docs, metas, dists):
+            hits.append({"collection": name, "document": doc, "metadata": meta, "distance": dist})
 
-def search(query: str, n: int = 5) -> list[dict]:
-    """Search the collection for the top n results matching the query."""
-    collection = get_collection_instance()
-    results = collection.query(query_texts=query, n_results=n)
-
-    documents = results.get("documents", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
-    distances = results.get("distances", [[]])[0]
-
-    hits = []
-    for i in range(len(documents)):
-        hits.append({
-            "document": documents[i],
-            "metadata": metadatas[i],
-            "distance": distances[i],
-        })
+    hits.sort(key=lambda h: h["distance"])
     return hits

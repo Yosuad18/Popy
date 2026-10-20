@@ -8,15 +8,13 @@ function generateThreadId() {
 const WELCOME_MESSAGE = {
   id: 'welcome',
   role: 'bot',
-  content: `html:¡Hola! Soy <strong>Popy</strong>, tu asistente de compras. Puedo ayudarte con:`,
+  content: `html:¡Hola! Soy <strong>Popy</strong>, tu asistente del restaurante. Puedo ayudarte con:`,
   items: [
-    'Buscar productos por nombre o categoría',
-    'Ver detalles de un producto por su ID',
-    'Añadir productos al carrito',
-    'Ver y gestionar tu carrito',
-    'Realizar un pedido',
-    'Consultar estado de pedidos',
-    'Consultar políticas de envío, devoluciones, pagos y más',
+    'Ver el menú: comida, bebidas y postres',
+    'Consultar descuentos y promociones vigentes',
+    'Registrar pedidos y calcular totales',
+    'Verificar el estado de tus órdenes',
+    'Consultar datos de usuarios registrados',
   ],
 };
 

@@ -11,16 +11,14 @@ import uvicorn
 from app.config import settings
 from app.routers import health_router, chat_router
 from app.data import ingest_all
-from app.rag.ingest import run_ingestion
 
 # Directorios de la aplicación
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = BASE_DIR / "static"
 FRONTEND_INDEX = STATIC_DIR / "index.html"
 
-# Ejecutar ingesta de datos en el arranque (productos + políticas + datos demo)
+# Ejecutar ingesta de datos del restaurante en el arranque
 ingest_all()
-run_ingestion()
 
 # Instancia ÚNICA de FastAPI
 app = FastAPI(
