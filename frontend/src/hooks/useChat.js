@@ -8,7 +8,7 @@ function generateThreadId() {
 const WELCOME_MESSAGE = {
   id: 'welcome',
   role: 'bot',
-  content: `html:¡Hola! Soy <strong>Popy</strong>, tu asistente del restaurante. Puedo ayudarte con:`,
+  content: `html:¡Hola! Soy Popy, tu asistente del restaurante. Puedo ayudarte con:`,
   items: [
     'Ver el menú: comida, bebidas y postres',
     'Consultar descuentos y promociones vigentes',
