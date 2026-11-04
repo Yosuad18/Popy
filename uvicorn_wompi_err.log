@@ -1,0 +1,21 @@
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/auth/identity "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/36f91ab3-f9b3-4172-91b4-083afd5b5bc4/get "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/36f91ab3-f9b3-4172-91b4-083afd5b5bc4/count?read_level=index_and_wal "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/0033dc84-8e8a-42d9-abd3-0570a670320d/get "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/0033dc84-8e8a-42d9-abd3-0570a670320d/count?read_level=index_and_wal "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/557745d9-1f04-4e60-bd8b-04c96c8899cb/get "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/557745d9-1f04-4e60-bd8b-04c96c8899cb/count?read_level=index_and_wal "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/6f7b545e-9a1c-459c-9c5d-1aafc56035b0/get "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.trychroma.com/api/v2/tenants/bbdf3cc9-9b67-4e53-89dd-825d72397350/databases/Poppy/collections/6f7b545e-9a1c-459c-9c5d-1aafc56035b0/count?read_level=index_and_wal "HTTP/1.1 200 OK"
+INFO:     Started server process [16024]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:wompi.webhook:Wompi payment APPROVED: id=01-E2E-NGROK-001 reference=ORDER-E2E-1 amount_in_cents=5000000 currency=COP payment_method=CARD
+WARNING:wompi.webhook:Invalid Wompi webhook signature received

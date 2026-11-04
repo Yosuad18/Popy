@@ -28,5 +28,12 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TEMPERATURE: float = 0.7
 
+    # Wompi (payment gateway)
+    WOMPI_PUBLIC_KEY: Optional[str] = None
+    WOMPI_PRIVATE_KEY: Optional[str] = None
+    WOMPI_INTEGRITY_SECRET: Optional[str] = None
+    WOMPI_EVENTS_SECRET: Optional[str] = None
+    WOMPI_BASE_URL: str = "https://sandbox.wompi.co/v1"
+
 
 settings = Settings()

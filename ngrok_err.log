@@ -1,0 +1,5 @@
+
+ERROR:  authentication failed: Your ngrok-agent version "3.3.1" is too old. The minimum supported agent version for your account is "3.28.0". Update to a newer version with 'ngrok update', by downloading from https://ngrok.com/download, or by updating your SDK version. Paid accounts are currently excluded from minimum agent version requirements. To begin handling traffic immediately without updating your agent, upgrade to a paid plan: https://dashboard.ngrok.com/billing/choose-a-plan.
+ERROR:  
+ERROR:  ERR_NGROK_121
+ERROR:  
