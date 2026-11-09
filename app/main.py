@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 from app.config import settings
-from app.routers import health_router, chat_router, wompi_router
+from app.routers import health_router, chat_router, wompi_router, payments_router
 from app.data import ingest_all
 
 # Directorios de la aplicación
@@ -45,6 +45,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(wompi_router)
+app.include_router(payments_router)
 
 # Servir archivos estáticos del frontend
 STATIC_DIR.mkdir(parents=True, exist_ok=True)

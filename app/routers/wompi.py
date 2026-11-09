@@ -7,6 +7,7 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
+from app.agent.tools import mark_order_paid, order_for_txn
 from app.config import settings
 
 logger = logging.getLogger("wompi.webhook")
@@ -87,6 +88,10 @@ def _handle_event(body: dict) -> None:
             txn.get("currency"),
             txn.get("payment_method_type"),
         )
+        # Sync local order if this txn belongs to one (Nequi flow).
+        order_id = order_for_txn(txn_id)
+        if order_id and mark_order_paid(order_id):
+            logger.info("Order %s marked as Pagado (webhook APPROVED)", order_id)
     else:
         logger.warning(
             "Wompi transaction %s: id=%s reference=%s message=%s",
@@ -95,6 +100,18 @@ def _handle_event(body: dict) -> None:
             txn.get("reference"),
             txn.get("status_message"),
         )
+        if status in ("DECLINED", "ERROR", "VOIDED"):
+            order_id = order_for_txn(txn_id)
+            if order_id:
+                from app.agent.tools import get_order
+
+                order = get_order(order_id)
+                if order and order.get("status") != "Pagado":
+                    order["status"] = {
+                        "DECLINED": "Rechazado",
+                        "ERROR": "Error",
+                        "VOIDED": "Anulado",
+                    }.get(status, status)
 
     PROCESSED_TRANSACTIONS[txn_id] = status
 

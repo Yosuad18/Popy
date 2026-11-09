@@ -5,10 +5,36 @@ import json
 import uuid
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 
 from app.agent.graph import graph, get_graph_mermaid
 from app.schemas.chat import ChatRequest, ChatResponse
+
+
+def _extract_html_tool_response(messages) -> str | None:
+    """Return the raw `html:` output of place_order from the *current* turn only.
+
+    Guarantees the Nequi payment form reaches the frontend intact,
+    regardless of how the LLM rephrases the final answer. Historical
+    place_order results are ignored so later replies are not overridden.
+    """
+    # Current turn starts after the last human message.
+    start = 0
+    for i in range(len(messages) - 1, -1, -1):
+        if isinstance(messages[i], HumanMessage):
+            start = i + 1
+            break
+
+    for msg in reversed(messages[start:]):
+        if (
+            isinstance(msg, ToolMessage)
+            and msg.name == "place_order"
+            and isinstance(msg.content, str)
+            and msg.content.startswith("html:")
+        ):
+            return msg.content
+    return None
+
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -26,9 +52,10 @@ async def chat_endpoint(payload: ChatRequest):
         )
 
         last_message = result["messages"][-1]
+        response = _extract_html_tool_response(result["messages"]) or last_message.content
 
         return ChatResponse(
-            response=last_message.content,
+            response=response,
             thread_id=thread_id,
             model="gpt-4o-mini",
             metadata={"total_messages": len(result["messages"])}
@@ -50,7 +77,7 @@ async def chat_stream_endpoint(payload: ChatRequest):
                 {"messages": [HumanMessage(content=payload.message)]},
                 config=config
             )
-            response = result["messages"][-1].content
+            response = _extract_html_tool_response(result["messages"]) or result["messages"][-1].content
             yield f"event: thread\ndata: {json.dumps({'thread_id': thread_id})}\n\n"
             yield f"event: token\ndata: {json.dumps({'token': response})}\n\n"
             yield f"event: done\ndata: {json.dumps({'thread_id': thread_id})}\n\n"

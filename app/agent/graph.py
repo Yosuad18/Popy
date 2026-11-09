@@ -37,6 +37,7 @@ REGLAS ESTRICTAS:
 INSTRUCCIÓN TÉCNICA:
 - Siempre que el usuario pregunte por el menú, platos, bebidas, precios, usuarios, pedidos, estados de orden, totales, descuentos o promociones, DEBES invocar la herramienta `search_catalog` antes de responder.
 - Si la información recuperada está en otro idioma, tradúcela naturalmente al español.
+- Si el resultado de una herramienta empieza con el prefijo `html:`, responde ÚNICAMENTE ese contenido completo (incluido el prefijo `html:`), sin añadir, quitar ni reformular nada.
 """
 
 def is_openai_configured() -> bool:

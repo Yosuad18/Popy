@@ -14,6 +14,33 @@ _CART_STORAGE: Dict[str, List[dict]] = {}
 _ORDER_STORAGE: Dict[str, dict] = {}
 _ORDER_COUNTER = 1000
 
+# Mapeo txn_id de Wompi → order_id (pagos Nequi en curso)
+_PAYMENT_TXN_TO_ORDER: Dict[str, str] = {}
+
+
+def get_order(order_id: str) -> dict | None:
+    """Returns the order dict for the given id, or None."""
+    return _ORDER_STORAGE.get(order_id)
+
+
+def mark_order_paid(order_id: str) -> bool:
+    """Marks an order as paid. Returns True if the order existed and was updated."""
+    order = _ORDER_STORAGE.get(order_id)
+    if not order:
+        return False
+    order["status"] = "Pagado"
+    return True
+
+
+def register_payment_txn(txn_id: str, order_id: str) -> None:
+    """Maps a Wompi transaction id to an order id."""
+    _PAYMENT_TXN_TO_ORDER[txn_id] = order_id
+
+
+def order_for_txn(txn_id: str) -> str | None:
+    """Returns the order id associated with a Wompi transaction id."""
+    return _PAYMENT_TXN_TO_ORDER.get(txn_id)
+
 
 def _get_cart(thread_id: str) -> List[dict]:
     """Returns the cart for the given session, creating it if needed."""
@@ -120,13 +147,50 @@ def place_order(config: RunnableConfig) -> str:
         "status": "Procesando",
     }
     _CART_STORAGE[thread_id] = []
-    
+
+    order = _ORDER_STORAGE[order_id]
+    items_html = "".join(
+        f"<li>{item['name']} × {item['quantity']} — "
+        f"${item['price'] * item['quantity']:.2f}</li>"
+        for item in order["items"]
+    )
+    total = order["total"]
+
+    # html: → el frontend lo renderiza con dangerouslySetInnerHTML (Message.jsx)
     return (
-        f"✅ ¡Pedido {order_id} confirmado!\n"
-        f"   Total: ${total:.2f}\n"
-        f"   Estado: {_ORDER_STORAGE[order_id]['status']}\n"
-        f"   Recibirás la confirmación de envío pronto.\n"
-        f"   Tu carrito ahora está vacío."
+        "html:"
+        f"<div style='font-family:system-ui,sans-serif'>"
+        f"<p style='margin:0 0 4px'>✅ <strong>¡Pedido {order_id} confirmado!</strong></p>"
+        f"<p style='margin:0 0 6px;color:#6b7280'>Estado: {order['status']}</p>"
+        f"<ul style='margin:0 0 8px;padding-left:18px'>{items_html}</ul>"
+        f"<p style='margin:0 0 12px;font-size:1.05em'>"
+        f"<strong>Total: ${total:.2f}</strong></p>"
+        f"<p style='margin:0 0 8px'>Paga con Nequi (sandbox oficial de Wompi):</p>"
+        f"<form method='post' action='/pay/nequi' "
+        f"style='display:flex;flex-direction:column;gap:8px;max-width:280px'>"
+        f"<input type='hidden' name='order_id' value='{order_id}' />"
+        f"<label style='font-size:0.85em;color:#374151'>Celular Nequi"
+        f"<input type='tel' name='phone_number' value='3991111111' "
+        f"pattern='3[0-9]{9}' required maxlength='10' "
+        f"placeholder='3XXXXXXXXX' "
+        f"style='margin-top:4px;width:100%;padding:8px;border:1px solid #d1d5d5;"
+        f"border-radius:8px;font-size:1em' /></label>"
+        f"<button type='submit' "
+        f"style='background:#C2185B;color:#fff;border:0;border-radius:8px;"
+        f"padding:10px 14px;font-size:1em;font-weight:600;cursor:pointer'>"
+        f"Pagar con Nequi</button>"
+        f"</form>"
+        f"<p style='margin:12px 0 4px'>O paga con tarjeta:</p>"
+        f"<a href='/pay/card/{order_id}' "
+        f"style='display:inline-block;background:#1f2937;color:#fff;"
+        f"border-radius:8px;padding:10px 14px;font-size:1em;font-weight:600;"
+        f"text-decoration:none'>Pagar con tarjeta</a>"
+        f"<p style='margin:12px 0 0;font-size:0.78em;color:#6b7280'>"
+        f"Sandbox tarjeta: <code>4242424242424242</code> (respaldo Wompi: "
+        f"<code>4111111111111111</code> / <code>5204730000001003</code>), "
+        f"cvv ≠ 111, fecha futura. Nequi <code>3991111111</code> aprueba solo."
+        f"</p>"
+        f"</div>"
     )
 
 
