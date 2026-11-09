@@ -111,7 +111,7 @@ DEBUG=True
 
 #### Opción A: Servidor Web FastAPI
 ```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 - **Demo Web**: [http://127.0.0.1:8000/demo](http://127.0.0.1:8000/demo)
 - **Documentación Swagger**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
@@ -122,6 +122,11 @@ python -m app.agent.main
 ```
 
 ---
+
+### Activar ngrok
+```bash
+ngrok http 8000
+```
 
 ## 📡 Endpoints de la API
 

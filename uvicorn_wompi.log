@@ -1,7 +1,9 @@
-[Popy] Colección 'Menu': sin cambios (15 docs)
-[Popy] Colección 'Usuarios': sin cambios (4 docs)
-[Popy] Colección 'Pedidos': sin cambios (5 docs)
-[Popy] Colección 'Descuentos': sin cambios (5 docs)
+[Popy] Coleccion 'Menu': sin cambios (15 docs)
+[Popy] Coleccion 'Usuarios': sin cambios (4 docs)
+[Popy] Coleccion 'Pedidos': sin cambios (5 docs)
+[Popy] Coleccion 'Descuentos': sin cambios (5 docs)
 INFO:     127.0.0.1:59530 - "GET /health HTTP/1.1" 200 OK
 INFO:     179.1.204.122:0 - "POST /webhooks/wompi HTTP/1.1" 200 OK
 INFO:     179.1.204.122:0 - "POST /webhooks/wompi HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:61717 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61718 - "GET /health HTTP/1.1" 200 OK
